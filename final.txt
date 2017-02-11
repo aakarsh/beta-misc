@@ -1,0 +1,13 @@
+
+. = 0
+ADDC(R31,end,R0)
+LD(R0,-16,R1)
+SHRC(R1,26,R2)
+SHLC(R1,16,R1)
+SRAC(R1,16,R1)
+end: HALT()
+
+
+
+R0: ??
+R1:??
