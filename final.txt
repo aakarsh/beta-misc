@@ -1,13 +1,36 @@
-
-. = 0
-ADDC(R31,end,R0)
-LD(R0,-16,R1)
-SHRC(R1,26,R2)
-SHLC(R1,16,R1)
-SRAC(R1,16,R1)
-end: HALT()
-
-
+        . = 0o
+        ADDC(R31,end,R0)
+        LD(R0,-16,R1)
+        SHRC(R1,26,R2)
+        SHLC(R1,16,R1)
+        SRAC(R1,16,R1)
+        end: HALT()
 
 R0: ??
-R1:??
+R1: ??
+R2: ??
+
+        . = 0
+        LD(R31,x,R0)
+        CMPLTC(R0,0,R1)
+        BEQ(R1,end,R2)
+        SUB(R31,R0,R0)
+   end: HALT()
+
+     x: LONG(0xFFFFFFFC)
+
+R0: ??
+R1: ??
+R2: ??
+
+      . = 0
+      LD(R31,x,R0)
+      CMOVE(0,R1)
+      BEQ(R0,end)
+loop: ADDC(R1,1,R1)
+      SHRC(R0,1,R0)
+      BNE(R0,loop)
+ end: HALT()
+
+   x: LONG(0xC0FFEE)
+
