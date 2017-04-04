@@ -28,23 +28,36 @@ UI:
         // we will restore them before we jump
         // to the _IllegalInstruction
         // restorations happen from the predefined
-        // array regs to which we saved the registers        
+        // array regs to which we saved the registers
         LD(r31,regs,r0)
         LD(r31,regs+4,r1)
         LD(r31,regs+8,r2)
         BR(_IllegalInstruction)
 
 
-store_byte: // store byte - stb(rc, literal, ra)
-        extract_field(r0,7,0,r1) // which byte to actually store
+store_byte: // store byte - stb(rc, literal, ra) -- [ 010000 [31:26] RC[27:22] RA[21:16] LITERAL[16:0]]
+        
+        // The effective address EA is computed by adding the contents of
+	// register Ra to the sign-extended 16-bit displacement
+	// literal. The low-order 8-bits of register Rc are written into
+	// the byte location in memory specified by EA. The other bytes
+	// of the memory word remain unchanged.
 
-        
-        
+
         restore_all_regs(regs)
         JMP(xp)
 
-load_byte: // load_byte  --  ldb(ra, literal, rc)
-        extract_field(r0,7,0,r1) // which byte to actually load
+
+
+load_byte: // load_byte  --  ldb(ra, literal, rc) -- [ 010000 [31:26] RC[27:22] RA[21:16] LITERAL[16:0]]
+
+        // The effective address EA is computed by adding the contents of
+        // register Ra to the sign-extended 16-bit displacement literal.
+        // The byte location in memory specified by EA is read into
+        // the low-order 8 bits of register Rc
+	// bits 31:8 of Rc are cleared.
+
+        extract_field(r0, 25, 21, r1)   // extract rc field from trapped instruction
         
 
         
