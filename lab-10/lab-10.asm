@@ -1,6 +1,21 @@
 .include "beta.uasm"
 .include "checkoff.uasm"
 
+/**
+ * TODO :
+   1. load_byte
+      1.1  Extract and sign extend literal
+      1.2  Perform Byte Extraction
+      1.3  Find the effective memory address
+      1.4  Select the byte that needs to be loaded.
+      1.5  Load it to the register and ensure everything else is zero-ed out
+
+   2. store byte - very similar
+        
+ */
+
+        
+
 regs:   RESERVE(32) // array used to store register contents
 
 UI:
@@ -50,9 +65,7 @@ store_byte: // store byte - stb(rc, literal, ra) -- [010000 [31:26] RC[27:22] RA
         // if EA1:0 = 0b01 then MDATA15:8  <= Reg[Rc]7:0
         // if EA1:0 = 0b10 then MDATA23:16 <= Reg[Rc]7:0
         // if EA1:0 = 0b11 then MDATA31:24 <= Reg[Rc]7:0
-        // Mem[EA] <= MDATA
-
-        
+        // Mem[EA] <= MDATA        
         
         extract_field(r0, 25, 21, r1)   // extract rc field from trapped instruction
         MULC(r1, 4, r1)                 // convert to byte offset into regs array
@@ -87,13 +100,12 @@ load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] R
         extract_field(r0, 25, 21, r1)   // extract rc field from trapped instruction
         MULC(r1, 4, r1)                 // convert to byte offset into regs array
         LD(r1, regs, r3)                // r3 <- regs[rc]
-        
 
         extract_field(r0, 20, 16, r2)   // extract ra field from trapped instruction
         MULC(r2, 4, r2)                 // convert to byte offset into regs array
         LD(r1, regs, r4)                // r4 <- regs[rc]
         
-        extract_field(r0, 15, 0, r5)    // extract literal  but is it sign extended?
+        extract_field(r0, 15, 0, r5)    // extract literal but is it sign extended?
         
         
         restore_all_regs(regs)
