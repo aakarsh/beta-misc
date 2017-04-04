@@ -10,12 +10,10 @@
       1.4  Select the byte that needs to be loaded.
       1.5  Load it to the register and ensure everything else is zero-ed out
 
-   2. store byte - very similar
-        
+   2. store byte - very similar        
+      2.1
+      2.2
  */
-
-        
-
 regs:   RESERVE(32) // array used to store register contents
 
 UI:
@@ -49,7 +47,6 @@ UI:
         LD(r31,regs+8,r2)
         BR(_IllegalInstruction)
 
-
 store_byte: // store byte - stb(rc, literal, ra) -- [010000 [31:26] RC[27:22] RA[21:16] LITERAL[16:0]]
         
         // The effective address EA is computed by adding the contents of
@@ -74,11 +71,9 @@ store_byte: // store byte - stb(rc, literal, ra) -- [010000 [31:26] RC[27:22] RA
         extract_field(r0, 20, 16, r2)   // extract ra field from trapped instruction
         MULC(r2, 4, r2)                 // convert to byte offset into regs array
         LD(r1, regs, r4)                // r4 <- regs[rc]        
-        
+
         restore_all_regs(regs)
         JMP(xp)
-
-
 
 load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] RA[20:16] LITERAL[15:0]] ??
 
@@ -103,10 +98,51 @@ load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] R
 
         extract_field(r0, 20, 16, r2)   // extract ra field from trapped instruction
         MULC(r2, 4, r2)                 // convert to byte offset into regs array
-        LD(r1, regs, r4)                // r4 <- regs[rc]
-        
+        LD(r1, regs, r4)                // r4 <- regs[ra]
+
+        // sign extension will mean we will shift left till 15th bit is the 31st bit
+        // after which we wil shift right sign extending as we go        
         extract_field(r0, 15, 0, r5)    // extract literal but is it sign extended?
+
+        SHLC(r5,r5,17)  // Shift till bit 15 is at 31
+        SRAC(r5,r5,17)  // Shift back with sign extension
+
+        // compute the effective address
+        ADD(r4,r4,r5)  // r4 <- EA (Reg[Ra] + SEXT(literal))
+        LD(r5,0,r6)    // r5 <- Mem[EA] load the effecitve address into r5
+
+        CMPEQC(r5,0x0,r2)
+        BT(r2,mdata_7)
+
+        CMPEQC(r5,0x01,r2)
+        BT(r2,mdata_15)
         
+        CMPEQC(r5,0x10,r2)
+        BT(r2,mdata_23)
+
+        CMPEQC(r5,0x11,r2)
+        BT(r2,mdata_31)
         
+mdata_7:
+        extract_field(r6,7,0,r3)  // r3 <- mdata[7:0]
+        ST(r1,regs,r3)
+        BF(r31,return)
+        
+mdata_15:
+        extract_field(r6,15,8,r3) 
+        ST(r1,regs,r3)
+        BF(r31,return)
+        
+mdata_23:
+        extract_field(r6,23,16,r3) 
+        ST(r1,regs,r3)
+        BF(r31,return)
+        
+mdata_31:       
+        extract_field(r6,31,23,r3) 
+        ST(r1,regs,r3)
+        BF(r31,return)
+        
+return: 
         restore_all_regs(regs)
         JMP(xp)
