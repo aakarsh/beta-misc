@@ -2,7 +2,6 @@
 .include "checkoff.uasm"
 
 /**
- * TODO :
    1. load_byte
       1.1  Extract and sign extend literal
       1.2  Perform Byte Extraction
@@ -43,6 +42,8 @@ UI:
         LD(r31,regs+8,r2)
         BR(_IllegalInstruction)
 
+
+        
 store_byte: // store byte - stb(rc, literal, ra) -- [010000 [31:26] RC[27:22] RA[21:16] LITERAL[16:0]]
 
         // The effective address EA is computed by adding the contents of
@@ -88,13 +89,13 @@ load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] R
         // else if EA_{1:0} = 0b11 then MDATA31:24
         // Reg[Rc]31:8 <= 0x000000
 
+        // r1 - make r1 hold target register number
         extract_field(r0, 25, 21, r1)   // extract rc field from trapped instruction
         MULC(r1, 4, r1)                 // convert to byte offset into regs array
-        LD(r1, regs, r3)                // r3 <- regs[rc]
 
         extract_field(r0, 20, 16, r2)   // extract ra field from trapped instruction
         MULC(r2, 4, r2)                 // convert to byte offset into regs array
-        LD(r1, regs, r4)                // r4 <- regs[ra]
+        LD(r2, regs, r4)                // r4 <- regs[ra]
 
         // sign extension will mean we will shift left till 15th bit is the 31st bit
         // after which we wil shift right sign extending as we go
