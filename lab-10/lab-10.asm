@@ -92,7 +92,8 @@ load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] R
         // r1 - make r1 hold target register number
         extract_field(r0, 25, 21, r1)   // extract rc field from trapped instruction
         MULC(r1, 4, r1)                 // convert to byte offset into regs array
-
+        
+        // r2 - holds index into register file for appropriate register 
         extract_field(r0, 20, 16, r2)   // extract ra field from trapped instruction
         MULC(r2, 4, r2)                 // convert to byte offset into regs array
         LD(r2, regs, r4)                // r4 <- regs[ra]
@@ -105,7 +106,7 @@ load_byte: // load_byte  --  ldb(ra, literal, rc) -- [010000 [31:26] RC[25:21] R
         SRAC(r5,r5,17)  // Shift back with sign extension
 
         // Compute the effective address
-        ADD(r4,r4,r5)  // r4 <- EA (Reg[Ra] + SEXT(literal))
+        ADD(r4,r5,r5)  // r4 <- EA (Reg[Ra] + SEXT(literal))
         LD(r5,0,r6)    // r5 <- Mem[EA] load the effecitve address into r5
 
         CMPEQC(r5,0x0,r2)
